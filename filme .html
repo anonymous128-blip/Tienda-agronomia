@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tienda Agronómica - Pedido por Email</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f8e9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #2e7d32;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+    .product {
+      width: 220px;
+      background: white;
+      margin: 10px;
+      padding: 10px;
+      float: left;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .product img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .cart, .formulario {
+      clear: both;
+      background: #e8f5e9;
+      padding: 15px;
+      margin: 20px;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #43a047;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #388e3c;
+    }
+    .notification {
+      display: none;
+      padding: 10px;
+      margin: 10px 0;
+      background: #c8e6c9;
+      border: 1px solid #2e7d32;
+      color: #1b5e20;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🌱 EcoAgro - Tienda Agronómica</h1>
+  <p>Venta de Insumos y Productos para el Campo</p>
+</header>
+
+<section id="productos">
+  <div class="product">
+    <img src="https://images.unsplash.com/photo-1576765607925-9e8e0b8c0d64?auto=format&fit=crop&w=400&q=60" alt="Fertilizante Orgánico">
+    <h3>Fertilizante Orgánico</h3>
+    <p>Precio: S/ 50</p>
+    <button onclick="agregarAlCarrito('Fertilizante Orgánico', 50)">Agregar al carrito</button>
+  </div>
+
+  <div class="product">
+    <img src="https://images.unsplash.com/photo-1614630981871-cfa1f0f04f33?auto=format&fit=crop&w=400&q=60" alt="Semillas de Maíz">
+    <h3>Semillas de Maíz</h3>
+    <p>Precio: S/ 30</p>
+    <button onclick="agregarAlCarrito('Semillas de Maíz', 30)">Agregar al carrito</button>
+  </div>
+
+  <div class="product">
+    <img src="https://images.unsplash.com/photo-1559241255-d431d097e42d?auto=format&fit=crop&w=400&q=60" alt="Herramienta de Jardín">
+    <h3>Herramienta de Jardín</h3>
+    <p>Precio: S/ 40</p>
+    <button onclick="agregarAlCarrito('Herramienta de Jardín', 40)">Agregar al carrito</button>
+  </div>
+</section>
+
+<section class="cart">
+  <h2>🛒 Carrito de Compras</h2>
+  <ul id="lista-carrito"></ul>
+  <p>Total: S/ <span id="total">0</span></p>
+  <button onclick="vaciarCarrito()">Vaciar Carrito</button>
+  <div id="notificacion" class="notification"></div>
+</section>
+
+<section class="formulario">
+  <h2>Formulario de Pedido</h2>
+  <form id="pedido-form" action="https://formspree.io/f/xyzjozog" method="POST" onsubmit="prepararPedido()">
+    <!-- Asunto del correo -->
+    <input type="hidden" name="_subject" value="Pedido de Agronomía">
+
+    <label>Nombre:</label><br>
+    <input type="text" name="Nombre" required><br><br>
+
+    <label>Email:</label><br>
+    <input type="email" name="Email" required><br><br>
+
+    <label>Dirección:</label><br>
+    <input type="text" name="Dirección" required><br><br>
+
+    <label>Teléfono:</label><br>
+    <input type="text" name="Teléfono" required><br><br>
+
+    <label>Detalle del pedido:</label><br>
+    <textarea name="Pedido" id="detallePedido" rows="5" readonly></textarea><br><br>
+
+    <!-- Campo oculto para el total -->
+    <input type="hidden" name="Total" id="totalPedido">
+
+    <button type="submit">Enviar Pedido</button>
+  </form>
+  <p id="respuesta-formulario" style="color: green; margin-top: 10px;"></p>
+</section>
+
+<script>
+  let carrito = [];
+  let total = 0;
+
+  function agregarAlCarrito(producto, precio) {
+    carrito.push({ producto, precio });
+    total += precio;
+    actualizarCarrito();
+    mostrarNotificacion(producto + " agregado al carrito.");
+  }
+
+  function actualizarCarrito() {
+    const lista = document.getElementById('lista-carrito');
+    lista.innerHTML = '';
+    carrito.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.producto} - S/ ${item.precio}`;
+      lista.appendChild(li);
+    });
+    document.getElementById('total').textContent = total;
+  }
+
+  function vaciarCarrito() {
+    carrito = [];
+    total = 0;
+    actualizarCarrito();
+    mostrarNotificacion("Carrito vaciado.");
+  }
+
+  function mostrarNotificacion(mensaje) {
+    const noti = document.getElementById('notificacion');
+    noti.textContent = mensaje;
+    noti.style.display = 'block';
+    setTimeout(() => {
+      noti.style.display = 'none';
+    }, 2000);
+  }
+
+  function prepararPedido() {
+    let detalle = "";
+    carrito.forEach(item => {
+      detalle += `${item.producto} - S/ ${item.precio}\n`;
+    });
+    document.getElementById('detallePedido').value = detalle;
+    document.getElementById('totalPedido').value = "S/ " + total;
+    vaciarCarrito();
+    mostrarNotificacion("Pedido enviado.");
+  }
+</script>
+
+</body>
+</html>
